@@ -1,6 +1,6 @@
 package linkedList;
 
-import iterator.MyIterator;
+import iterator.Iterator;
 
 public interface LinkedList<E> {
     //
@@ -8,7 +8,7 @@ public interface LinkedList<E> {
     boolean empty();
     int indexOf(Object object); // 추가
     boolean contains(Object object);
-    MyIterator<E> iterator();
+    Iterator<E> iterator();
     void add(E element);
     void add(int index, E element); // 임의로 추가
     E get(int index);

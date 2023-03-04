@@ -1,10 +1,16 @@
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class Test {
+public class MyLinkedListTest  {
 
     public static void main(String[] args) {
+        //
+        MyLinkedListTest myLinkedListTest = new MyLinkedListTest();
+        myLinkedListTest.testLinkedTest();
+    }
 
+    public void testLinkedTest() {
+        //
         ArrayList<String> list = new ArrayList();
 
         list.add("one");
@@ -28,7 +34,6 @@ public class Test {
         while (iter.hasNext()) {
             System.out.print(iter.next() + " ");
         }
-
 
     }
 

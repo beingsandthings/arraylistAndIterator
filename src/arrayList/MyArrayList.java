@@ -1,56 +1,52 @@
 package arrayList;
 
+import iterator.Iterator;
 import iterator.MyIterator;
+import linkedList.MyLinkedList;
 
 public class MyArrayList<E> implements ArrayList<E> {
     //
-    private static final int DEFAULT_CAPACITY = 5; // 생성자로 배열이 생성될 때 기본용량
+    private static final int DEFAULT_CAPACITY = 5;
 
-    private E[] item; // 배열
-    private int size; // 배열 길이
+    private int currentCapacity;
+    private E[] elements;
+    private int length;
+
 
     public MyArrayList() {
-        this.item = (E[]) new Object[DEFAULT_CAPACITY];
-        this.size = 0;
+        //
+        initialize();
     }
 
     public MyArrayList(int capacity) {
-        if (capacity > 0) {
-            this.item = (E[]) new Object[capacity];
+        //
+        if (capacity <= 0) {
+            throw new IllegalArgumentException("Capacity should be positive number");
         }
-        else if (capacity == 0) {
-            this.item = (E[]) new Object[DEFAULT_CAPACITY];
-        }
-        else if (capacity < 0) {
-            throw new RuntimeException(new IllegalArgumentException("리스트 용량을 잘못 설정하였습니다."));
-        }
-        this.size = 0;
+
+        this.currentCapacity = capacity;
+        this.elements = (E[]) new Object[capacity];
+        this.length = 0;
     }
 
     @Override
     public int size() {
-        return size;
+        //
+        return length;
     }
 
     @Override
     public boolean empty() {
-        return size == 0;
+        //
+        return length == 0;
     }
 
     @Override
     public int indexOf(Object object) {
-        if (object == null) {
-            for (int i=0; i<size; i++) {
-                if(item[i] == null) {
-                    return i;
-                }
-            }
-        }
-        else {
-            for (int i=0; i<size; i++) {
-                if (item[i].equals(object)) {
-                    return i;
-                }
+        //
+        for (int i=0; i<length; i++) {
+            if ((object == null && elements[i] == null) || (object != null && elements[i].equals(object))) {
+                return i;
             }
         }
         return -1;
@@ -58,52 +54,76 @@ public class MyArrayList<E> implements ArrayList<E> {
 
     @Override
     public boolean contains(Object object) {
+        //
         return indexOf(object) > 0;
     }
 
     @Override
-    public MyIterator<E> iterator() {
-        return new MyIterator<>();
+    public Iterator<E> iterator() {
+        //
+        return new MyArrayIterator();
+    }
+
+    private class MyArrayIterator implements Iterator<E> {
+        //
+        private int index = 0;
+        private E[] elements;
+        private int length;
+
+        public MyIterator myIterator() {
+            this.index = 0;
+            this.elements = (E[]) new Object[0];
+            this.length = 0;
+            return new MyIterator();
+        }
+
+        @Override
+        public E next() {
+            return (E) elements[index++];
+        }
+
+        @Override
+        public boolean hasNext() {
+            return index < length;
+        }
     }
 
     @Override
     public void add(E element) {
-        resize();
+        //
+        checkCapacity(1);
 
-        item[size]  = element;
-        size++;
+        elements[length] = element;
+        length++;
     }
 
     @Override
     public void add(int index, E element) {
-        if (index < 0 || index > size) {
-            throw new IndexOutOfBoundsException();
-        }
+        //
+        validateIndex(index);
 
-        if (index == size) {
-            resize();
+        if (index == length) {
             add(element);
         }
 
         else {
-            resize();
+            checkCapacity(1);
 
-            for (int i = size; i > index; i--) {
-                item[i] = item[i-1];
+            for (int i=index; i<length; i++) {
+                elements[i+1] = elements[i];
             }
 
-            item[index] = element;
-            size++;
+            elements[index] = element;
+            length++;
         }
     }
 
     @Override
     public E get(int index) {
         //
-        if (index < 0 || index > size) {
-            return null;
-        }
-        return item[index];
+        validateIndex(index);
+
+        return elements[index];
     }
 
     @Override
@@ -111,7 +131,7 @@ public class MyArrayList<E> implements ArrayList<E> {
         //
         int idx = indexOf(object);
 
-        if (idx == -1) return;
+        validateIndex(idx);
 
         remove(idx);
     }
@@ -119,91 +139,89 @@ public class MyArrayList<E> implements ArrayList<E> {
     @Override
     public void remove(int index) {
         //
-        if (index < 0 || index > size) {
-            throw new IndexOutOfBoundsException();
+        validateIndex(index);
+
+        elements[index] = null;
+
+        for (int i=index; i<length-1; i++) {
+            elements[i] = elements[i+1];
+            elements[i+1] = null;
         }
 
-        item[index] = null;
-
-        for (int i=index; i<size-1; i++) {
-            item[i] = item[i+1];
-            item[i+1] = null;
-        }
-
-        size--;
+        length--;
     }
 
     @Override
-    public void addAll(ArrayList collection) {
-        if (collection == null || collection.size() == 0) {
-            return;
+    public void addAll(ArrayList elementList) {
+        //
+        if (elementList == null || elementList.size() == 0) {
+            throw new IllegalArgumentException("Length of elementList to add should be greater than zero");
         }
 
-        int addSize = collection.size();
-        resizeWithSize(addSize);
+        int extraLength = elementList.size();
+        checkCapacity(extraLength);
 
-        for (int i=0; i<addSize; i++) {
-            item[size] = (E) collection.get(i);
-            size++;
+        for (int i=0; i<extraLength; i++) {
+            elements[length] = (E) elementList.get(i);
+            length++;
         }
     }
 
     @Override
     public void clear() {
-        item = (E[]) new Object[item.length];
-        size = 0;
+        //
+        initialize();
     }
 
     @Override
-    public Object[] toArray(Object[] some) {
-        if (some.length <= size) {
-            return copyArray(item, size);
-        }
-        else {
-            // System.arraycopy(원본배열, 원본배열 시작위치, 복사할 배열, 복사할배열 시작위치, 복사할 요소 수)
-            System.arraycopy(item, 0, some, 0, size);
-
-            // 내부 배열을 복사한 후 바로 다음에 null을 삽입
-            if (some.length > size)
-                some[size] = null;
-
-            return some;
-        }
-    }
-
-    private void resize() {
-        int element_capacity = item.length;
-
-        if (element_capacity == size) {
-            int new_capacity = element_capacity * 2;
-
-            item = (E[]) copyArray(item, new_capacity);
-        }
-    }
-
-    private void resizeWithSize(int addSize) {
-        int element_capacity = item.length + addSize;
-
-        if (element_capacity == size) {
-            int new_capacity = element_capacity * 2;
-
-            item = (E[]) copyArray(item, new_capacity);
-        }
-    }
-
-
-    private Object[] copyArray(Object object, int size) {
+    public Object[] toArray(Object[] elementList) {
         //
-        int newSize = size + 1;
-        Object[] newArray = new Object[newSize];
+        E[] newElements = (E[]) new Object[currentCapacity];
+        System.arraycopy(elementList, 0, newElements, 0, length);
 
-        newArray[newSize-1] = object;
+        if (elementList.length > length) {
+            checkCapacity(newElements.length - length);
 
-        for (int i=0; i<newArray.length; i++){
-            this.item[i] = (E) newArray[i];
+            for (int i=length; i< elementList.length; i++) {
+                elementList[i] = null;
+            }
         }
-        return this.item;
+
+        elements = newElements;
+
+        return newElements;
     }
+
+    private void initialize() {
+        this.currentCapacity = DEFAULT_CAPACITY;
+        this.elements = (E[]) new Object[currentCapacity];
+        this.length = 0;
+    }
+
+
+    private void checkCapacity(int extraLength) {
+        //
+        int element_capacity = elements.length + extraLength;
+
+        if (element_capacity >= length) {
+            int new_capacity = element_capacity * 2;
+            currentCapacity = new_capacity;
+
+            E[] newElements = (E[]) new Object[currentCapacity];
+            System.arraycopy(elements, 0, newElements, 0, length);
+            elements = newElements;
+        }
+    }
+
+    private void validateIndex(int index) {
+        //
+        if (index < 0 || index >= length) {
+            throw new IndexOutOfBoundsException();
+        }
+    }
+
+
+
 
 
 }

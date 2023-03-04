@@ -1,48 +1,50 @@
 package linkedList;
 
+import iterator.Iterator;
 import iterator.MyIterator;
-
 import java.util.Objects;
 
 public class MyLinkedList<E> implements LinkedList<E>{
-    //singly linkedList
+    //
     private Node<E> head;
     private Node<E> tail;
-    private int size;
+    private int length;
 
     public MyLinkedList() {
-        this.head = null;
-        this.tail = null;
-        this.size = 0;
+        //
+        initialize();
     }
 
     private static class Node<E> {
-        private E item;
+        private E element;
         private Node<E> next;
 
         Node(E item, Node<E> next) {
-            this.item = item;
+            this.element = item;
             this.next = next;
         }
     }
 
     @Override
     public int size() {
-        return size;
+        //
+        return length;
     }
 
     @Override
     public boolean empty() {
-        return size==0;
+        //
+        return length == 0;
     }
 
     @Override
     public int indexOf(Object object) {
+        //
         Node<E> currentNode = head;
         Node<E> targetNode = null;
 
-        for (int i=0; i<size; i++) {
-            if(Objects.equals(currentNode.item, object)) {
+        for (int i=0; i<length; i++) {
+            if(Objects.equals(currentNode.element, object)) {
                 targetNode = currentNode;
                 return i;
             }
@@ -53,39 +55,62 @@ public class MyLinkedList<E> implements LinkedList<E>{
 
     @Override
     public boolean contains(Object object) {
+        //
         return indexOf(object) > 0;
     }
 
     @Override
-    public MyIterator<E> iterator() {
-        return new MyIterator<>();
+    public Iterator<E> iterator() {
+        //
+        return new MyLinkedListIterator();
+    }
+
+    private class MyLinkedListIterator implements Iterator<E> {
+
+        private Node<E> current;
+
+        @Override
+        public E next() {
+            return (E) (current = current.next);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return current.next != null;
+        }
+
+        //
+
     }
 
     @Override
     public void add(E element) {
+        //
         addLast(element);
     }
 
     public void addFirst(E element) {
-        Node<E> first = head;
+        //
+        Node<E> firstNode = head;
 
-        Node<E> newNode = new Node<>(element, first);
+        Node<E> newNode = new Node<>(element, firstNode);
 
-        size++;
+        length++;
 
         head = newNode;
 
-        if (first == null) {
+        if (firstNode == null) {
             tail = newNode;
         }
     }
 
     public void addLast(E element) {
+        //
         Node<E> last = tail;
 
         Node<E> newNode = new Node<>(element, null);
 
-        size++;
+        length++;
 
         tail = newNode;
 
@@ -98,16 +123,15 @@ public class MyLinkedList<E> implements LinkedList<E>{
 
     @Override
     public void add(int index, E element) {
-        if (index < 0 || index > size) {
-            throw new IndexOutOfBoundsException();
-        }
+        //
+        validateIndex(index);
 
         if (index == 0) {
             addFirst(element);
             return;
         }
 
-        if (index == size -1) {
+        if (index == length -1) {
             addLast(element);
             return;
         }
@@ -117,40 +141,38 @@ public class MyLinkedList<E> implements LinkedList<E>{
         Node<E> newNode = new Node<>(element, delNode);
 
         prevNode.next = newNode;
-        size++;
+        length++;
     }
 
     @Override
     public E get(int index) {
-        if (index < 0 || index > size ) {
-            throw new IndexOutOfBoundsException();
-        }
+        //
+        validateIndex(index);
 
-        return getNode(index).item;
+        return getNode(index).element;
     }
 
     @Override
     public void remove(Object object) {
+        //
         Node<E> currNode = head;
         Node<E> prevNode = null;
 
         while( currNode != null) {
-            if (Objects.equals(currNode.item, object)) {
+            if (Objects.equals(currNode.element, object)) {
                 prevNode.next = currNode.next;
+                length--;
                 break;
             }
             prevNode = currNode;
             currNode = currNode.next;
         }
-
-        size--;
     }
 
     @Override
     public void remove(int index) {
-        if (index < 0 || index > size) {
-            throw new IndexOutOfBoundsException();
-        }
+        //
+        validateIndex(index);
 
         if (index == 0) {
             removeFirst();
@@ -161,27 +183,28 @@ public class MyLinkedList<E> implements LinkedList<E>{
         Node<E> delNode = prevNode.next;
         Node<E> nextNode = delNode.next;
 
-        delNode.item = null;
+        delNode.element = null;
         delNode.next = null;
 
-        size--;
+        length--;
 
         prevNode.next = nextNode;
     }
 
     public void removeFirst() {
+        //
         if (head == null) {
-            throw new IndexOutOfBoundsException();
+            throw new IllegalArgumentException("There's nothing to remove.");
         }
 
         Node<E> first = head.next;
 
-        head.item = null;
+        head.element = null;
         head.next = null;
 
         head = first;
 
-        size--;
+        length--;
 
         if (head == null) {
             tail = null;
@@ -189,28 +212,29 @@ public class MyLinkedList<E> implements LinkedList<E>{
     }
 
     @Override
-    public void addAll(LinkedList collection) {
-        if (collection == null || collection.size() == 0) {
+    public void addAll(LinkedList elementList) {
+        //
+        if (elementList == null || elementList.size() == 0) {
             return;
         }
 
-        int addSize = collection.size();
-        for (int i=0; i<addSize; i++) {
-            addLast((E) collection.get(i));
-            size++;
+        int extraLength = elementList.size();
+        for (int i=0; i<extraLength; i++) {
+            addLast((E) elementList.get(i));
+            length++;
         }
     }
 
     @Override
     public void clear() {
-        size = 0;
-        head = new Node<>(null, null);
-        tail = new Node<>(null, null);
+        //
+        initialize();
     }
 
     @Override
     public Object[] toArray(Object[] some) {
-        Object[] array = new Object[size];
+        //
+        Object[] array = new Object[length];
 
         int index = 0;
         Node<E> currNode = head;
@@ -224,10 +248,29 @@ public class MyLinkedList<E> implements LinkedList<E>{
     }
 
     private Node<E> getNode(int index) {
+        //
+        validateIndex(index);
+
         Node<E> currNode = head;
         for (int i=0; i<index; i++) {
             currNode = currNode.next;
         }
         return currNode;
+    }
+
+    private void initialize() {
+        //
+        this.length = 0;
+        this.head = new Node<>(null, null);
+        this.tail = new Node<>(null, null);
+//        this.head = null;
+//        this.tail = null;
+    }
+
+    private void validateIndex(int index) {
+        //
+        if (index < 0 || index >= length) {
+            throw new IndexOutOfBoundsException();
+        }
     }
 }
