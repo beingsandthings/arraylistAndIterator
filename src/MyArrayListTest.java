@@ -1,5 +1,5 @@
-import java.util.ArrayList;
-import java.util.Iterator;
+import arrayList.MyArrayList;
+import iterator.Iterator;
 
 public class MyArrayListTest {
 
@@ -11,7 +11,7 @@ public class MyArrayListTest {
 
     public void testMyArrayList() {
         //
-        ArrayList<String> list = new ArrayList();
+        MyArrayList<String> list = new MyArrayList();
 
         list.add("one");
         list.add("two");
@@ -23,8 +23,7 @@ public class MyArrayListTest {
 
         // Create an iterator for the list
         // using iterator() method
-        Iterator<String> iter
-                = list.iterator();
+        Iterator<String> iter = list.iterator();
 
         // Displaying the values after iterating
         // through the list

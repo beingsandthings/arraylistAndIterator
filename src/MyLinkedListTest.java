@@ -1,5 +1,7 @@
+import iterator.Iterator;
+import linkedList.MyLinkedList;
+
 import java.util.ArrayList;
-import java.util.Iterator;
 
 public class MyLinkedListTest  {
 
@@ -11,7 +13,7 @@ public class MyLinkedListTest  {
 
     public void testLinkedTest() {
         //
-        ArrayList<String> list = new ArrayList();
+        MyLinkedList<String> list = new MyLinkedList();
 
         list.add("one");
         list.add("two");
@@ -23,8 +25,7 @@ public class MyLinkedListTest  {
 
         // Create an iterator for the list
         // using iterator() method
-        Iterator<String> iter
-                = list.iterator();
+        Iterator<String> iter = list.iterator();
 
         // Displaying the values after iterating
         // through the list

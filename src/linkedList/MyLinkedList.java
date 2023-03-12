@@ -16,6 +16,7 @@ public class MyLinkedList<E> implements LinkedList<E>{
     }
 
     private static class Node<E> {
+        //
         private E element;
         private Node<E> next;
 
@@ -50,6 +51,7 @@ public class MyLinkedList<E> implements LinkedList<E>{
             }
             currentNode = currentNode.next;
         }
+
         return -1;
     }
 
@@ -66,21 +68,23 @@ public class MyLinkedList<E> implements LinkedList<E>{
     }
 
     private class MyLinkedListIterator implements Iterator<E> {
-
-        private Node<E> current;
+        //
+        private Node<E> nextNode = head;
 
         @Override
         public E next() {
-            return (E) (current = current.next);
+            //
+//            Node current = nextNode;
+//            nextNode = nextNode.next;
+//            return (E) (current = current.next);
+            return (E) nextNode.next;
         }
 
         @Override
         public boolean hasNext() {
-            return current.next != null;
+            //
+            return nextNode.next != null;
         }
-
-        //
-
     }
 
     @Override
@@ -261,10 +265,8 @@ public class MyLinkedList<E> implements LinkedList<E>{
     private void initialize() {
         //
         this.length = 0;
-        this.head = new Node<>(null, null);
-        this.tail = new Node<>(null, null);
-//        this.head = null;
-//        this.tail = null;
+        this.head = null;
+        this.tail = null;
     }
 
     private void validateIndex(int index) {
